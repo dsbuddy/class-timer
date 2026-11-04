@@ -5,89 +5,84 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Coco Class Timer</title>
 <style>
-  :root{ --ink:#2b2838; --good:#56cc88; --warn:#ffb14e; --late:#ff6b6b; --accent:#8fd0ff; }
+  :root{ --ink:#2b2838; --soft:#7a7d9c; --good:#56cc88; --warn:#ffb14e; --late:#ff6b6b; --accent:#8fd0ff; }
   *{box-sizing:border-box}
   html,body{height:100%;margin:0}
-  body{font-family:"Baloo 2","Comic Sans MS","Trebuchet MS",system-ui,sans-serif;color:var(--ink);overflow:hidden}
+  body{font-family:"Baloo 2","Comic Sans MS","Trebuchet MS",system-ui,sans-serif;color:var(--ink);
+    background:radial-gradient(circle at 12px 12px,#00000006 3px,transparent 3.5px) 0 0/46px 46px,linear-gradient(135deg,#eef5ff,#fbf0ff);
+    min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px;overflow-x:hidden}
 
-  /* dog fills the screen */
-  #hero{position:fixed;inset:0;background:#dfe6f2 center/cover no-repeat;z-index:0}
-  #scrim{position:fixed;inset:0;z-index:1;pointer-events:none;
-    background:linear-gradient(to bottom, #0006 0%, #0000 22%, #0000 55%, #0007 100%)}
+  .title{margin:0;cursor:pointer;font-size:clamp(24px,3.6vw,42px);font-weight:800;text-align:center}
 
-  /* title chip */
-  .title{position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:3;cursor:pointer;
-    background:#ffffffdd;border-radius:999px;padding:10px 22px;box-shadow:0 8px 24px #0003;
-    font-size:clamp(20px,3vw,34px);font-weight:800;white-space:nowrap}
+  /* dog in the center of the ring */
+  .stage{position:relative;width:min(62vmin,540px);aspect-ratio:1}
+  .stage svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+  .track{fill:none;stroke:#ffffff;stroke-width:20}
+  .prog{fill:none;stroke:var(--good);stroke-width:20;stroke-linecap:round;transition:stroke-dashoffset .3s linear,stroke .5s}
+  .dog{position:absolute;top:50%;left:50%;width:81%;height:81%;transform:translate(-50%,-50%);
+    border-radius:50%;object-fit:cover;background:#dfe6f2;box-shadow:0 10px 30px #0003}
+  .paw{position:absolute;font-size:30px;transform:translate(-50%,-50%);transition:left .3s linear,top .3s linear;
+    filter:drop-shadow(0 2px 3px #0003);pointer-events:none;z-index:2}
+  .bone{position:absolute;font-size:24px;transform:translate(-50%,-50%);pointer-events:none;
+    filter:drop-shadow(0 1px 2px #0002);transition:opacity .4s,transform .4s}
+  .bone.eaten{opacity:.2;transform:translate(-50%,-50%) scale(.75)}
+  .time{position:absolute;left:50%;bottom:-6%;transform:translateX(-50%);background:#ffffffe8;border-radius:999px;
+    padding:6px 24px;font-size:clamp(40px,8vw,78px);font-weight:800;font-variant-numeric:tabular-nums;box-shadow:0 8px 22px #0003}
 
-  /* floating glass timer card */
-  .card{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:3;
-    width:min(680px,94vw);background:#ffffffe8;backdrop-filter:blur(8px);
-    border-radius:26px;box-shadow:0 18px 50px #0004;padding:18px 20px 20px;
-    display:flex;flex-direction:column;align-items:center;gap:12px}
+  .msg{font-size:clamp(15px,2.2vw,22px);color:var(--soft);min-height:1.3em;text-align:center;margin-top:10px}
 
-  .time{font-size:clamp(56px,12vw,120px);font-weight:800;line-height:.95;font-variant-numeric:tabular-nums}
-  .msg{font-size:clamp(14px,2.2vw,22px);color:#6b6f8a;min-height:1.3em;text-align:center}
-
-  .bar{position:relative;width:100%;height:20px;background:#e9edf6;border-radius:999px;overflow:visible}
-  .fill{height:100%;border-radius:999px;background:var(--good);width:100%;
-    transition:width .3s linear,background .5s}
-  .paw{position:absolute;top:50%;font-size:26px;transform:translate(-50%,-55%);
-    transition:left .3s linear;filter:drop-shadow(0 2px 3px #0003)}
-
-  .presets{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
-  .pill{border:none;background:#f1f4fb;color:var(--ink);font:inherit;font-weight:700;
-    font-size:clamp(14px,1.8vw,19px);padding:10px 16px;border-radius:999px;cursor:pointer;transition:transform .08s,background .2s}
+  .presets{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:520px}
+  .pill{border:none;background:#ffffffcc;color:var(--ink);font:inherit;font-weight:700;font-size:clamp(14px,1.8vw,19px);
+    padding:10px 17px;border-radius:999px;cursor:pointer;box-shadow:0 4px 12px #0001;transition:transform .08s,background .2s}
   .pill:hover{transform:translateY(-2px)}
   .pill.sel{background:var(--accent);color:#06456b}
   .custom{display:flex;gap:6px;align-items:center}
-  .custom input{width:72px;font:inherit;font-size:16px;text-align:center;padding:9px;border:2px solid #e3e8f2;border-radius:12px}
-  .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center}
-  .big{font-size:clamp(16px,2.2vw,22px);font-weight:800;padding:13px 30px;border-radius:16px;border:none;cursor:pointer;
-    box-shadow:0 6px 16px #0002;transition:transform .08s}
+  .custom input{width:74px;font:inherit;font-size:16px;text-align:center;padding:9px;border:2px solid #fff;border-radius:12px}
+  .row{display:flex;gap:11px;flex-wrap:wrap;justify-content:center;align-items:center}
+  .big{font-size:clamp(16px,2.2vw,22px);font-weight:800;padding:14px 32px;border-radius:16px;border:none;cursor:pointer;box-shadow:0 6px 16px #0002;transition:transform .08s}
   .big:hover{transform:translateY(-2px)}
-  .start{background:var(--good);color:#063d22} .pause{background:#ffd66b;color:#6b4e00} .reset{background:#eef1f8;color:#6b6f8a}
-  .mini{background:#eef1f8;color:#6b6f8a;border:none;font:inherit;font-weight:700;padding:8px 13px;border-radius:12px;cursor:pointer}
+  .start{background:var(--good);color:#063d22} .pause{background:#ffd66b;color:#6b4e00} .reset{background:#fff;color:var(--soft)}
+  .mini{background:#fff;color:var(--soft);border:none;font:inherit;font-weight:700;padding:8px 13px;border-radius:12px;cursor:pointer;box-shadow:0 4px 12px #0001}
   .tools{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}
   .tools .mini{font-size:12px}
   input[type=file]{display:none}
 </style>
 </head>
 <body>
-  <div id="hero"></div>
-  <div id="scrim"></div>
+  <h1 class="title" id="title" title="Click to set your dog's name">🐾 <span id="nameSpan">Coco</span>'s Class Timer 🐾</h1>
 
-  <div class="title" id="title" title="Click to set your dog's name"><span id="nameSpan">Coco</span>'s Class Timer</div>
-
-  <div class="card">
+  <div class="stage">
+    <svg viewBox="0 0 320 320"><circle class="track" cx="160" cy="160" r="150"></circle><circle class="prog" id="prog" cx="160" cy="160" r="150"></circle></svg>
+    <img class="dog" id="dogImg" src="dog_hero.jpg" alt="Our class dog">
+    <div class="paw" id="paw">🐾</div>
     <div class="time" id="time">30:00</div>
-    <div class="bar"><div class="fill" id="fill"></div><div class="paw" id="paw">🐾</div></div>
-    <div class="msg" id="msg">Pick a time and press Start</div>
+  </div>
 
-    <div class="presets" id="presets">
-      <button class="pill" data-min="5">5</button>
-      <button class="pill" data-min="10">10</button>
-      <button class="pill" data-min="15">15</button>
-      <button class="pill" data-min="20">20</button>
-      <button class="pill sel" data-min="30">30</button>
-      <button class="pill" data-min="45">45</button>
-      <button class="pill" data-min="60">60</button>
-      <div class="custom"><input id="customMin" type="number" min="1" max="180" placeholder="min"><button class="pill" id="setCustom">Set</button></div>
-    </div>
+  <div class="msg" id="msg">Pick a time and press Start</div>
 
-    <div class="row">
-      <button class="big start" id="startBtn">Start</button>
-      <button class="big pause" id="pauseBtn" style="display:none">Pause</button>
-      <button class="big reset" id="resetBtn">Reset</button>
-      <button class="mini" id="plus1">+1 min</button>
-    </div>
+  <div class="presets" id="presets">
+    <button class="pill" data-min="5">5</button>
+    <button class="pill" data-min="10">10</button>
+    <button class="pill" data-min="15">15</button>
+    <button class="pill" data-min="20">20</button>
+    <button class="pill sel" data-min="30">30</button>
+    <button class="pill" data-min="45">45</button>
+    <button class="pill" data-min="60">60</button>
+    <div class="custom"><input id="customMin" type="number" min="1" max="180" placeholder="min"><button class="pill" id="setCustom">Set</button></div>
+  </div>
 
-    <div class="tools">
-      <button class="mini" id="musicBtn">Calm music: off</button>
-      <button class="mini" id="ownMusicBtn">Load my music</button>
-      <button class="mini" id="dogBtn">Change dog photo</button>
-      <button class="mini" id="fsBtn">Fullscreen</button>
-    </div>
+  <div class="row">
+    <button class="big start" id="startBtn">Start</button>
+    <button class="big pause" id="pauseBtn" style="display:none">Pause</button>
+    <button class="big reset" id="resetBtn">Reset</button>
+    <button class="mini" id="plus1">+1 min</button>
+  </div>
+
+  <div class="tools">
+    <button class="mini" id="musicBtn">Calm music: off</button>
+    <button class="mini" id="ownMusicBtn">Load my music</button>
+    <button class="mini" id="dogBtn">Change dog photo</button>
+    <button class="mini" id="fsBtn">Fullscreen</button>
   </div>
 
   <input type="file" id="dogFile" accept="image/*">
@@ -96,31 +91,36 @@
 
 <script>
 (function(){
-  const hero=document.getElementById('hero');
-  const timeEl=document.getElementById('time'), msgEl=document.getElementById('msg');
-  const fill=document.getElementById('fill'), paw=document.getElementById('paw');
+  const R=150, CIRC=2*Math.PI*R;
+  const prog=document.getElementById('prog'); prog.style.strokeDasharray=CIRC; prog.style.strokeDashoffset=0;
+  const timeEl=document.getElementById('time'), msgEl=document.getElementById('msg'), paw=document.getElementById('paw');
   const startBtn=document.getElementById('startBtn'), pauseBtn=document.getElementById('pauseBtn'), resetBtn=document.getElementById('resetBtn');
-  const presets=document.getElementById('presets');
+  const presets=document.getElementById('presets'), dogImg=document.getElementById('dogImg');
+  const stage=document.querySelector('.stage');
 
-  // dog image (default baked in, user can change)
-  const savedDog=localStorage.getItem('ct_dog');
-  hero.style.backgroundImage="url('"+(savedDog||'dog_hero.jpg')+"')";
+  // bone milestones around the ring (fade out as time passes them)
+  const BONES=[]; const nb=8;
+  for(let i=1;i<nb;i++){ const p=i/nb; const ang=(-90+360*p)*Math.PI/180;
+    const b=document.createElement('div'); b.className='bone'; b.textContent='🦴';
+    b.style.left=((160+R*Math.cos(ang))/320*100)+'%'; b.style.top=((160+R*Math.sin(ang))/320*100)+'%';
+    stage.appendChild(b); BONES.push({el:b,p}); }
 
-  // name
+  const savedDog=localStorage.getItem('ct_dog'); if(savedDog) dogImg.src=savedDog;
+
   let dogName=localStorage.getItem('ct_name')||'Coco';
   function applyName(){ document.getElementById('nameSpan').textContent=dogName; document.title=dogName+" Class Timer"; }
   applyName();
   document.getElementById('title').addEventListener('click',()=>{ const n=prompt("What is your dog's name?",dogName);
     if(n&&n.trim()){ dogName=n.trim(); localStorage.setItem('ct_name',dogName); applyName(); } });
 
-  // timer
   let totalSec=1800,leftSec=1800,running=false,tick=null,endAt=0;
   const cheers=()=>[dogName+" is proud of you! 🐾","Keep going! 🐾","Woof! Nice focus!",dogName+" says great job!","Almost there! 🐾","You've got this!"];
   const fmt=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
   const gv=n=>getComputedStyle(document.documentElement).getPropertyValue(n);
+  function placePaw(f){ const ang=(-90+360*f)*Math.PI/180; paw.style.left=((160+R*Math.cos(ang))/320*100)+'%'; paw.style.top=((160+R*Math.sin(ang))/320*100)+'%'; }
   function render(){ timeEl.textContent=fmt(leftSec); const f=totalSec?leftSec/totalSec:0;
-    fill.style.width=(f*100)+'%'; fill.style.background=f>0.5?gv('--good'):f>0.2?gv('--warn'):gv('--late');
-    paw.style.left=(f*100)+'%'; }
+    prog.style.strokeDashoffset=CIRC*(1-f); prog.style.stroke=f>0.5?gv('--good'):f>0.2?gv('--warn'):gv('--late'); placePaw(f);
+    BONES.forEach(b=>b.el.classList.toggle('eaten', b.p>f)); }
   function setDuration(min){ totalSec=leftSec=Math.max(1,Math.round(min*60)); running=false; clearInterval(tick);
     startBtn.style.display='';pauseBtn.style.display='none';startBtn.textContent='Start'; msgEl.textContent='Ready! Press Start'; render(); }
   function loop(){ leftSec=Math.max(0,Math.round((endAt-Date.now())/1000)); render(); if(leftSec<=0) return done();
@@ -140,7 +140,6 @@
   startBtn.onclick=start; pauseBtn.onclick=pause; resetBtn.onclick=reset;
   window.addEventListener('keydown',e=>{ if(e.code==='Space'){e.preventDefault(); running?pause():start();} });
 
-  // audio
   let AC=null; function ac(){ const C=window.AudioContext||window.webkitAudioContext; if(!AC)AC=new C(); if(AC.state==='suspended')AC.resume(); return AC; }
   function chime(){ try{ const a=ac(); [523.25,659.25,783.99,1046.5].forEach((f,i)=>{ const o=a.createOscillator(),g=a.createGain();
     o.type='sine';o.frequency.value=f; const t=a.currentTime+i*0.18; g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.22,t+0.04);
@@ -169,10 +168,9 @@
   document.getElementById('musicFile').addEventListener('change',e=>{ const f=e.target.files[0]; if(!f)return; if(Calm.on){Calm.stop();document.getElementById('musicBtn').textContent='Calm music: off';}
     localAudio.src=URL.createObjectURL(f); localAudio.play(); document.getElementById('ownMusicBtn').textContent='My music: playing'; });
 
-  // change dog photo
   document.getElementById('dogBtn').addEventListener('click',()=>document.getElementById('dogFile').click());
   document.getElementById('dogFile').addEventListener('change',e=>{ const f=e.target.files[0]; if(!f)return; const r=new FileReader();
-    r.onload=()=>{ try{localStorage.setItem('ct_dog',r.result);}catch(_){ } hero.style.backgroundImage="url('"+r.result+"')"; }; r.readAsDataURL(f); });
+    r.onload=()=>{ try{localStorage.setItem('ct_dog',r.result);}catch(_){ } dogImg.src=r.result; }; r.readAsDataURL(f); });
 
   document.getElementById('fsBtn').addEventListener('click',()=>{ if(!document.fullscreenElement)document.documentElement.requestFullscreen(); else document.exitFullscreen(); });
 
