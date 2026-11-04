@@ -27,7 +27,7 @@
   .main{display:flex;flex-wrap:wrap;gap:26px;align-items:center;justify-content:center;width:100%}
 
   /* dog hero */
-  .dogcard{position:relative;width:clamp(260px,34vw,440px);aspect-ratio:3/4;border-radius:28px;
+  .dogcard{position:relative;width:clamp(320px,46vw,620px);aspect-ratio:3/4;border-radius:28px;
     overflow:hidden;background:#fff;border:10px solid #fff;box-shadow:0 18px 44px #0002}
   .dogcard video,.dogcard img{width:100%;height:100%;object-fit:cover;display:block}
   .dogcard .badge{position:absolute;left:12px;bottom:12px;background:#ffffffe6;border-radius:999px;
@@ -76,7 +76,7 @@
 
   <div class="main">
     <div class="dogcard" id="dogcard">
-      <video id="dogVid" src="dog.mp4" poster="dog_hero.jpg" muted loop autoplay playsinline></video>
+      <img id="dogImg" src="dog_hero.jpg" alt="Our class dog">
       <div class="badge" id="badge">🐾 <span id="badgeName">My Dog</span></div>
     </div>
 
