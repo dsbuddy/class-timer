@@ -25,13 +25,13 @@
   .track{fill:none;stroke:#ffffff;stroke-width:20}
   .prog{fill:none;stroke:var(--good);stroke-width:20;stroke-linecap:round;transition:stroke-dashoffset .3s linear,stroke .5s}
   .dog{position:absolute;top:50%;left:50%;width:81%;height:81%;transform:translate(-50%,-50%);
-    border-radius:50%;object-fit:cover;background:#dfe6f2;box-shadow:0 10px 30px #0003}
+    border-radius:50%;object-fit:cover;object-position:48% 32%;background:#dfe6f2;box-shadow:0 10px 30px #0003}
   .paw{position:absolute;font-size:30px;transform:translate(-50%,-50%);transition:left .3s linear,top .3s linear;
     filter:drop-shadow(0 2px 3px #0003);pointer-events:none;z-index:2}
   .bone{position:absolute;font-size:24px;transform:translate(-50%,-50%);pointer-events:none;
     filter:drop-shadow(0 1px 2px #0002);transition:opacity .4s,transform .4s}
   .bone.eaten{opacity:.2;transform:translate(-50%,-50%) scale(.75)}
-  .msg{font-size:clamp(15px,2.2vw,22px);color:var(--soft);min-height:1.3em;text-align:left}
+  .msg{font-size:clamp(16px,2.4vw,26px);color:var(--ink);min-height:1.4em;text-align:center;max-width:min(74vmin,660px);font-weight:700}
 
   .presets{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-start;max-width:420px}
   .pill{border:none;background:#ffffffcc;color:var(--ink);font:inherit;font-weight:700;font-size:clamp(14px,1.8vw,19px);
@@ -59,11 +59,11 @@
         <div class="paw" id="paw">🐾</div>
       </div>
       <div class="timeNum" id="time">30:00</div>
+      <div class="msg" id="msg">Pick a time and press Start</div>
     </div>
 
     <div class="side">
       <h1 class="title" id="title" title="Click to set your dog's name">🐾 <span id="nameSpan">Coco</span>'s<br>Class Timer</h1>
-      <div class="msg" id="msg">Pick a time and press Start</div>
 
       <div class="presets" id="presets">
         <button class="pill" data-min="5">5</button>
@@ -120,18 +120,19 @@
   document.getElementById('title').addEventListener('click',()=>{ const n=prompt("What is your dog's name?",dogName);
     if(n&&n.trim()){ dogName=n.trim(); localStorage.setItem('ct_name',dogName); applyName(); } });
 
-  let totalSec=1800,leftSec=1800,running=false,tick=null,endAt=0;
+  let totalSec=1800,leftSec=1800,running=false,tick=null,endAt=0,lastEaten=0;
   const cheers=()=>[dogName+" is proud of you! 🐾","Keep going! 🐾","Woof! Nice focus!",dogName+" says great job!","Almost there! 🐾","You've got this!"];
   const fmt=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
   const gv=n=>getComputedStyle(document.documentElement).getPropertyValue(n);
   function placePaw(f){ const ang=(-90+360*f)*Math.PI/180; paw.style.left=((160+R*Math.cos(ang))/320*100)+'%'; paw.style.top=((160+R*Math.sin(ang))/320*100)+'%'; }
   function render(){ timeEl.textContent=fmt(leftSec); const f=totalSec?leftSec/totalSec:0;
     prog.style.strokeDashoffset=CIRC*(1-f); prog.style.stroke=f>0.5?gv('--good'):f>0.2?gv('--warn'):gv('--late'); placePaw(f);
-    BONES.forEach(b=>b.el.classList.toggle('eaten', b.p>f)); }
+    let eaten=0; BONES.forEach(b=>{ const e=b.p>f; b.el.classList.toggle('eaten', e); if(e) eaten++; });
+    if(running && eaten>lastEaten){ const c=cheers(); msgEl.textContent=c[Math.floor(Math.random()*c.length)]; }
+    lastEaten=eaten; }
   function setDuration(min){ totalSec=leftSec=Math.max(1,Math.round(min*60)); running=false; clearInterval(tick);
     startBtn.style.display='';pauseBtn.style.display='none';startBtn.textContent='Start'; msgEl.textContent='Ready! Press Start'; render(); }
-  function loop(){ leftSec=Math.max(0,Math.round((endAt-Date.now())/1000)); render(); if(leftSec<=0) return done();
-    if(leftSec%30===0){ const c=cheers(); msgEl.textContent=c[Math.floor(Math.random()*c.length)]; } }
+  function loop(){ leftSec=Math.max(0,Math.round((endAt-Date.now())/1000)); render(); if(leftSec<=0) return done(); }
   function start(){ if(running||leftSec<=0)return; running=true; endAt=Date.now()+leftSec*1000; tick=setInterval(loop,250);
     startBtn.style.display='none';pauseBtn.style.display='';msgEl.textContent='Timer is going!'; }
   function pause(){ running=false;clearInterval(tick);startBtn.style.display='';pauseBtn.style.display='none';startBtn.textContent='Resume';msgEl.textContent='Paused'; }
