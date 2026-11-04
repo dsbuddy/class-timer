@@ -39,7 +39,8 @@
     padding:10px 17px;border-radius:999px;cursor:pointer;box-shadow:0 4px 12px #0001;transition:transform .08s,background .2s}
   .pill:hover{transform:translateY(-2px)}
   .pill.sel{background:var(--accent);color:#06456b}
-  .custom{display:flex;gap:6px;align-items:center}
+  .rowbreak{flex-basis:100%;height:0}
+  .custom{display:flex;gap:6px;align-items:center;margin-left:18px}
   .custom input{width:74px;font:inherit;font-size:16px;text-align:center;padding:9px;border:2px solid #fff;border-radius:12px}
   .row{display:flex;gap:11px;flex-wrap:wrap;justify-content:center;align-items:center}
   .big{font-size:clamp(16px,2.2vw,22px);font-weight:800;padding:14px 32px;border-radius:16px;border:none;cursor:pointer;box-shadow:0 6px 16px #0002;transition:transform .08s}
@@ -72,6 +73,7 @@
         <button class="pill" data-min="15">15</button>
         <button class="pill" data-min="20">20</button>
         <button class="pill sel" data-min="30">30</button>
+        <div class="rowbreak"></div>
         <button class="pill" data-min="45">45</button>
         <button class="pill" data-min="60">60</button>
         <div class="custom"><input id="customMin" type="number" min="1" max="180" placeholder="min"><button class="pill" id="setCustom">Set</button></div>
@@ -159,25 +161,20 @@
     d.textContent=em[i%em.length]; d.style.cssText='position:fixed;left:'+Math.random()*100+'vw;top:-40px;font-size:'+(22+Math.random()*26)+'px;z-index:60;pointer-events:none;transition:transform 2.8s ease-in,opacity 2.8s';
     document.body.appendChild(d); requestAnimationFrame(()=>{ d.style.transform='translateY(112vh) rotate('+(Math.random()*720-360)+'deg)';d.style.opacity='0'; }); setTimeout(()=>d.remove(),2900); } }
 
-  const Calm={on:false,voices:[],timer:null,
-    start(){ const a=ac(); this.master=a.createGain(); this.master.gain.value=0; this.master.connect(a.destination); this.master.gain.linearRampToValueAtTime(0.55,a.currentTime+2);
-      this.lp=a.createBiquadFilter(); this.lp.type='lowpass'; this.lp.frequency.value=1700; this.lp.connect(this.master);
-      this.delay=a.createDelay(); this.delay.delayTime.value=0.34; this.fb=a.createGain(); this.fb.gain.value=0.28; this.delay.connect(this.fb); this.fb.connect(this.delay); this.delay.connect(this.lp);
-      this.padGain=a.createGain(); this.padGain.gain.value=0.10; this.padGain.connect(this.lp);
-      [130.81,196.0,261.63].forEach(f=>{ const o=a.createOscillator(); o.type='sine'; o.frequency.value=f; const g=a.createGain(); g.gain.value=0.33; o.connect(g).connect(this.padGain); o.start(); this.voices.push(o); });
-      this.on=true; this.schedule(); },
-    note(){ const a=ac(); const sc=[261.63,293.66,329.63,392.0,440.0,523.25,587.33,659.25]; const f=sc[Math.floor(Math.random()*sc.length)];
-      const o=a.createOscillator(); o.type='triangle'; o.frequency.value=f; const g=a.createGain(); const t=a.currentTime;
-      g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.16,t+0.05); g.gain.exponentialRampToValueAtTime(0.0001,t+1.7);
-      o.connect(g); g.connect(this.lp); g.connect(this.delay); o.start(t); o.stop(t+1.8); },
-    schedule(){ if(!this.on)return; this.note(); this.timer=setTimeout(()=>this.schedule(),1300+Math.random()*1700); },
-    stop(){ this.on=false; clearTimeout(this.timer); const a=ac(); try{this.master.gain.linearRampToValueAtTime(0,a.currentTime+1);}catch(e){} setTimeout(()=>{this.voices.forEach(o=>{try{o.stop()}catch(e){}});this.voices=[];},1200); } };
-  const localAudio=document.getElementById('localAudio');
-  document.getElementById('musicBtn').addEventListener('click',function(){ if(Calm.on){Calm.stop();this.textContent='Calm music: off';}
-    else{ if(!localAudio.paused){localAudio.pause();document.getElementById('ownMusicBtn').textContent='Load my music';} Calm.start(); this.textContent='Calm music: on'; } });
+  // real lofi playlist (CC0 / public domain, HoliznaCC0)
+  const TRACKS=['track1.mp3','track2.mp3','track3.mp3'];
+  const bg=document.getElementById('localAudio'); bg.loop=false; bg.volume=0.5;
+  let ti=0, ownMode=false, musicOn=false;
+  bg.addEventListener('ended',()=>{ if(ownMode) return; ti=(ti+1)%TRACKS.length; bg.src=TRACKS[ti]; bg.play().catch(()=>{}); });
+  const musicBtn=document.getElementById('musicBtn');
+  musicBtn.addEventListener('click',function(){
+    if(musicOn){ bg.pause(); musicOn=false; this.textContent='Calm music: off'; }
+    else{ ownMode=false; if(!bg.src || bg.src.indexOf('track')===-1) bg.src=TRACKS[ti]; bg.play().catch(()=>{}); musicOn=true; this.textContent='Calm music: on'; document.getElementById('ownMusicBtn').textContent='Load my music'; }
+  });
   document.getElementById('ownMusicBtn').addEventListener('click',()=>document.getElementById('musicFile').click());
-  document.getElementById('musicFile').addEventListener('change',e=>{ const f=e.target.files[0]; if(!f)return; if(Calm.on){Calm.stop();document.getElementById('musicBtn').textContent='Calm music: off';}
-    localAudio.src=URL.createObjectURL(f); localAudio.play(); document.getElementById('ownMusicBtn').textContent='My music: playing'; });
+  document.getElementById('musicFile').addEventListener('change',e=>{ const f=e.target.files[0]; if(!f)return;
+    ownMode=true; musicOn=true; bg.loop=true; bg.src=URL.createObjectURL(f); bg.play().catch(()=>{});
+    musicBtn.textContent='Calm music: off'; document.getElementById('ownMusicBtn').textContent='My music: playing'; });
 
   document.getElementById('dogBtn').addEventListener('click',()=>document.getElementById('dogFile').click());
   document.getElementById('dogFile').addEventListener('change',e=>{ const f=e.target.files[0]; if(!f)return; const r=new FileReader();
