@@ -71,13 +71,13 @@
 </style>
 </head>
 <body>
-  <h1 class="title" id="title" title="Click to set your dog's name"><span class="paw">🐾</span> <span id="nameSpan">My Dog</span>'s Class Timer <span class="paw">🐾</span></h1>
+  <h1 class="title" id="title" title="Click to set your dog's name"><span class="paw">🐾</span> <span id="nameSpan">Coco</span>'s Class Timer <span class="paw">🐾</span></h1>
   <p class="subtitle" id="subtitle">Pick a time and press Start</p>
 
   <div class="main">
     <div class="dogcard" id="dogcard">
       <img id="dogImg" src="dog_hero.jpg" alt="Our class dog">
-      <div class="badge" id="badge">🐾 <span id="badgeName">My Dog</span></div>
+      <div class="badge" id="badge">🐾 <span id="badgeName">Coco</span></div>
     </div>
 
     <div class="timerside">
@@ -137,12 +137,12 @@
   const presets=document.getElementById('presets'), pawmark=document.getElementById('pawmark');
 
   // ---- dog name ----
-  let dogName=localStorage.getItem('ct_name')||'My Dog';
+  let dogName=localStorage.getItem('ct_name')||'Coco';
   function applyName(){ document.getElementById('nameSpan').textContent=dogName;
     document.getElementById('badgeName').textContent=dogName; document.title=dogName+" Class Timer"; }
   applyName();
   document.getElementById('title').addEventListener('click',()=>{
-    const n=prompt("What is your dog's name?",dogName==='My Dog'?'':dogName);
+    const n=prompt("What is your dog's name?",dogName);
     if(n&&n.trim()){ dogName=n.trim(); localStorage.setItem('ct_name',dogName); applyName(); refreshMsg(); }
   });
 
