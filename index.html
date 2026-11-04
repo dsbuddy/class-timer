@@ -10,12 +10,17 @@
   html,body{height:100%;margin:0}
   body{font-family:"Baloo 2","Comic Sans MS","Trebuchet MS",system-ui,sans-serif;color:var(--ink);
     background:radial-gradient(circle at 12px 12px,#00000006 3px,transparent 3.5px) 0 0/46px 46px,linear-gradient(135deg,#eef5ff,#fbf0ff);
-    min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px;overflow-x:hidden}
+    min-height:100%;display:flex;align-items:center;justify-content:center;padding:18px;overflow-x:hidden}
 
-  .title{margin:0;cursor:pointer;font-size:clamp(24px,3.6vw,42px);font-weight:800;text-align:center}
+  .app{display:flex;flex-wrap:wrap;gap:clamp(20px,4vw,56px);align-items:center;justify-content:center;width:100%}
+  .left{display:flex;flex-direction:column;align-items:center;gap:16px}
+  .side{display:flex;flex-direction:column;align-items:flex-start;gap:16px;max-width:420px}
+
+  .title{margin:0;cursor:pointer;font-size:clamp(26px,3.4vw,44px);font-weight:800;text-align:left;line-height:1.1}
+  .timeNum{font-size:clamp(52px,9vw,110px);font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
 
   /* dog in the center of the ring */
-  .stage{position:relative;width:min(62vmin,540px);aspect-ratio:1}
+  .stage{position:relative;width:min(74vmin,660px);aspect-ratio:1}
   .stage svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
   .track{fill:none;stroke:#ffffff;stroke-width:20}
   .prog{fill:none;stroke:var(--good);stroke-width:20;stroke-linecap:round;transition:stroke-dashoffset .3s linear,stroke .5s}
@@ -26,12 +31,9 @@
   .bone{position:absolute;font-size:24px;transform:translate(-50%,-50%);pointer-events:none;
     filter:drop-shadow(0 1px 2px #0002);transition:opacity .4s,transform .4s}
   .bone.eaten{opacity:.2;transform:translate(-50%,-50%) scale(.75)}
-  .time{position:absolute;left:50%;bottom:-6%;transform:translateX(-50%);background:#ffffffe8;border-radius:999px;
-    padding:6px 24px;font-size:clamp(40px,8vw,78px);font-weight:800;font-variant-numeric:tabular-nums;box-shadow:0 8px 22px #0003}
+  .msg{font-size:clamp(15px,2.2vw,22px);color:var(--soft);min-height:1.3em;text-align:left}
 
-  .msg{font-size:clamp(15px,2.2vw,22px);color:var(--soft);min-height:1.3em;text-align:center;margin-top:10px}
-
-  .presets{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:520px}
+  .presets{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-start;max-width:420px}
   .pill{border:none;background:#ffffffcc;color:var(--ink);font:inherit;font-weight:700;font-size:clamp(14px,1.8vw,19px);
     padding:10px 17px;border-radius:999px;cursor:pointer;box-shadow:0 4px 12px #0001;transition:transform .08s,background .2s}
   .pill:hover{transform:translateY(-2px)}
@@ -49,40 +51,45 @@
 </style>
 </head>
 <body>
-  <h1 class="title" id="title" title="Click to set your dog's name">🐾 <span id="nameSpan">Coco</span>'s Class Timer 🐾</h1>
+  <div class="app">
+    <div class="left">
+      <div class="stage">
+        <svg viewBox="0 0 320 320"><circle class="track" cx="160" cy="160" r="150"></circle><circle class="prog" id="prog" cx="160" cy="160" r="150"></circle></svg>
+        <img class="dog" id="dogImg" src="dog_hero.jpg" alt="Our class dog">
+        <div class="paw" id="paw">🐾</div>
+      </div>
+      <div class="timeNum" id="time">30:00</div>
+    </div>
 
-  <div class="stage">
-    <svg viewBox="0 0 320 320"><circle class="track" cx="160" cy="160" r="150"></circle><circle class="prog" id="prog" cx="160" cy="160" r="150"></circle></svg>
-    <img class="dog" id="dogImg" src="dog_hero.jpg" alt="Our class dog">
-    <div class="paw" id="paw">🐾</div>
-    <div class="time" id="time">30:00</div>
-  </div>
+    <div class="side">
+      <h1 class="title" id="title" title="Click to set your dog's name">🐾 <span id="nameSpan">Coco</span>'s<br>Class Timer</h1>
+      <div class="msg" id="msg">Pick a time and press Start</div>
 
-  <div class="msg" id="msg">Pick a time and press Start</div>
+      <div class="presets" id="presets">
+        <button class="pill" data-min="5">5</button>
+        <button class="pill" data-min="10">10</button>
+        <button class="pill" data-min="15">15</button>
+        <button class="pill" data-min="20">20</button>
+        <button class="pill sel" data-min="30">30</button>
+        <button class="pill" data-min="45">45</button>
+        <button class="pill" data-min="60">60</button>
+        <div class="custom"><input id="customMin" type="number" min="1" max="180" placeholder="min"><button class="pill" id="setCustom">Set</button></div>
+      </div>
 
-  <div class="presets" id="presets">
-    <button class="pill" data-min="5">5</button>
-    <button class="pill" data-min="10">10</button>
-    <button class="pill" data-min="15">15</button>
-    <button class="pill" data-min="20">20</button>
-    <button class="pill sel" data-min="30">30</button>
-    <button class="pill" data-min="45">45</button>
-    <button class="pill" data-min="60">60</button>
-    <div class="custom"><input id="customMin" type="number" min="1" max="180" placeholder="min"><button class="pill" id="setCustom">Set</button></div>
-  </div>
+      <div class="row">
+        <button class="big start" id="startBtn">Start</button>
+        <button class="big pause" id="pauseBtn" style="display:none">Pause</button>
+        <button class="big reset" id="resetBtn">Reset</button>
+        <button class="mini" id="plus1">+1 min</button>
+      </div>
 
-  <div class="row">
-    <button class="big start" id="startBtn">Start</button>
-    <button class="big pause" id="pauseBtn" style="display:none">Pause</button>
-    <button class="big reset" id="resetBtn">Reset</button>
-    <button class="mini" id="plus1">+1 min</button>
-  </div>
-
-  <div class="tools">
-    <button class="mini" id="musicBtn">Calm music: off</button>
-    <button class="mini" id="ownMusicBtn">Load my music</button>
-    <button class="mini" id="dogBtn">Change dog photo</button>
-    <button class="mini" id="fsBtn">Fullscreen</button>
+      <div class="tools">
+        <button class="mini" id="musicBtn">Calm music: off</button>
+        <button class="mini" id="ownMusicBtn">Load my music</button>
+        <button class="mini" id="dogBtn">Change dog photo</button>
+        <button class="mini" id="fsBtn">Fullscreen</button>
+      </div>
+    </div>
   </div>
 
   <input type="file" id="dogFile" accept="image/*">
