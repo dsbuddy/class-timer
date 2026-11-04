@@ -3,126 +3,92 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dog Class Timer</title>
+<title>Coco Class Timer</title>
 <style>
-  :root{
-    --bg1:#eef5ff; --bg2:#fbf0ff; --ink:#34324a; --soft:#7a7d9c;
-    --good:#6fcf97; --warn:#ffb55e; --late:#ff7a7a; --accent:#8fd0ff;
-    --card:#ffffffe6;
-  }
+  :root{ --ink:#2b2838; --good:#56cc88; --warn:#ffb14e; --late:#ff6b6b; --accent:#8fd0ff; }
   *{box-sizing:border-box}
   html,body{height:100%;margin:0}
-  body{
-    font-family:"Baloo 2","Comic Sans MS","Trebuchet MS",system-ui,sans-serif;
-    color:var(--ink);min-height:100%;overflow-x:hidden;
-    background:
-      radial-gradient(circle at 12px 12px, #00000008 3px, transparent 3.5px) 0 0/48px 48px,
-      linear-gradient(135deg,var(--bg1),var(--bg2));
-    display:flex;flex-direction:column;align-items:center;gap:14px;padding:18px;
-  }
-  .title{margin:6px 0 0;font-size:clamp(24px,3.4vw,40px);text-align:center;cursor:pointer}
-  .title .paw{filter:saturate(1.1)}
-  .subtitle{margin:0;color:var(--soft);font-size:clamp(13px,1.6vw,17px)}
+  body{font-family:"Baloo 2","Comic Sans MS","Trebuchet MS",system-ui,sans-serif;color:var(--ink);overflow:hidden}
 
-  .main{display:flex;flex-wrap:wrap;gap:26px;align-items:center;justify-content:center;width:100%}
+  /* dog fills the screen */
+  #hero{position:fixed;inset:0;background:#dfe6f2 center/cover no-repeat;z-index:0}
+  #scrim{position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:linear-gradient(to bottom, #0006 0%, #0000 22%, #0000 55%, #0007 100%)}
 
-  /* dog hero */
-  .dogcard{position:relative;width:clamp(320px,46vw,620px);aspect-ratio:3/4;border-radius:28px;
-    overflow:hidden;background:#fff;border:10px solid #fff;box-shadow:0 18px 44px #0002}
-  .dogcard video,.dogcard img{width:100%;height:100%;object-fit:cover;display:block}
-  .dogcard .badge{position:absolute;left:12px;bottom:12px;background:#ffffffe6;border-radius:999px;
-    padding:8px 16px;font-weight:800;font-size:clamp(14px,1.8vw,20px);box-shadow:0 6px 16px #0002}
+  /* title chip */
+  .title{position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:3;cursor:pointer;
+    background:#ffffffdd;border-radius:999px;padding:10px 22px;box-shadow:0 8px 24px #0003;
+    font-size:clamp(20px,3vw,34px);font-weight:800;white-space:nowrap}
 
-  /* timer side */
-  .timerside{display:flex;flex-direction:column;align-items:center;gap:16px}
-  .ringbox{position:relative;width:clamp(240px,34vw,400px);height:clamp(240px,34vw,400px)}
-  svg{transform:rotate(-90deg);width:100%;height:100%}
-  .track{fill:none;stroke:#ffffff;stroke-width:22}
-  .prog{fill:none;stroke:var(--good);stroke-width:22;stroke-linecap:round;
-    transition:stroke-dashoffset .3s linear,stroke .5s}
-  .readout{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-  .time{font-size:clamp(50px,9vw,104px);font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
-  .msg{font-size:clamp(14px,2vw,22px);color:var(--soft);min-height:1.3em;text-align:center;padding:0 10px}
-  .pawmark{position:absolute;font-size:30px;transform:translate(-50%,-50%);pointer-events:none;
-    filter:drop-shadow(0 2px 3px #0003);transition:left .3s linear,top .3s linear}
+  /* floating glass timer card */
+  .card{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:3;
+    width:min(680px,94vw);background:#ffffffe8;backdrop-filter:blur(8px);
+    border-radius:26px;box-shadow:0 18px 50px #0004;padding:18px 20px 20px;
+    display:flex;flex-direction:column;align-items:center;gap:12px}
 
-  .presets{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;max-width:460px}
-  .pill{border:none;background:var(--card);color:var(--ink);font:inherit;font-weight:700;
-    font-size:clamp(14px,1.8vw,19px);padding:11px 18px;border-radius:999px;cursor:pointer;
-    box-shadow:0 4px 12px #0001;transition:transform .08s,background .2s}
+  .time{font-size:clamp(56px,12vw,120px);font-weight:800;line-height:.95;font-variant-numeric:tabular-nums}
+  .msg{font-size:clamp(14px,2.2vw,22px);color:#6b6f8a;min-height:1.3em;text-align:center}
+
+  .bar{position:relative;width:100%;height:20px;background:#e9edf6;border-radius:999px;overflow:visible}
+  .fill{height:100%;border-radius:999px;background:var(--good);width:100%;
+    transition:width .3s linear,background .5s}
+  .paw{position:absolute;top:50%;font-size:26px;transform:translate(-50%,-55%);
+    transition:left .3s linear;filter:drop-shadow(0 2px 3px #0003)}
+
+  .presets{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+  .pill{border:none;background:#f1f4fb;color:var(--ink);font:inherit;font-weight:700;
+    font-size:clamp(14px,1.8vw,19px);padding:10px 16px;border-radius:999px;cursor:pointer;transition:transform .08s,background .2s}
   .pill:hover{transform:translateY(-2px)}
   .pill.sel{background:var(--accent);color:#06456b}
-  .custom{display:flex;gap:7px;align-items:center}
-  .custom input{width:78px;font:inherit;font-size:17px;text-align:center;padding:9px;
-    border:2px solid #fff;border-radius:14px;background:#fff;color:var(--ink)}
-  .row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;align-items:center}
-  .big{font-size:clamp(17px,2.2vw,23px);font-weight:800;padding:15px 34px;border-radius:18px;
-    border:none;cursor:pointer;box-shadow:0 6px 16px #0002;transition:transform .08s}
+  .custom{display:flex;gap:6px;align-items:center}
+  .custom input{width:72px;font:inherit;font-size:16px;text-align:center;padding:9px;border:2px solid #e3e8f2;border-radius:12px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center}
+  .big{font-size:clamp(16px,2.2vw,22px);font-weight:800;padding:13px 30px;border-radius:16px;border:none;cursor:pointer;
+    box-shadow:0 6px 16px #0002;transition:transform .08s}
   .big:hover{transform:translateY(-2px)}
-  .start{background:var(--good);color:#063d22}
-  .pause{background:#ffd66b;color:#6b4e00}
-  .reset{background:#fff;color:var(--soft)}
-  .mini{background:#fff;color:var(--soft);border:none;font:inherit;font-weight:700;
-    padding:9px 14px;border-radius:13px;cursor:pointer;box-shadow:0 4px 12px #0001}
-  .tools{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:4px}
-  .tools .mini{font-size:13px}
+  .start{background:var(--good);color:#063d22} .pause{background:#ffd66b;color:#6b4e00} .reset{background:#eef1f8;color:#6b6f8a}
+  .mini{background:#eef1f8;color:#6b6f8a;border:none;font:inherit;font-weight:700;padding:8px 13px;border-radius:12px;cursor:pointer}
+  .tools{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}
+  .tools .mini{font-size:12px}
   input[type=file]{display:none}
-  .credit{font-size:12px;color:#aab0cf;text-align:center}
 </style>
 </head>
 <body>
-  <h1 class="title" id="title" title="Click to set your dog's name"><span class="paw">🐾</span> <span id="nameSpan">Coco</span>'s Class Timer <span class="paw">🐾</span></h1>
-  <p class="subtitle" id="subtitle">Pick a time and press Start</p>
+  <div id="hero"></div>
+  <div id="scrim"></div>
 
-  <div class="main">
-    <div class="dogcard" id="dogcard">
-      <img id="dogImg" src="dog_hero.jpg" alt="Our class dog">
-      <div class="badge" id="badge">🐾 <span id="badgeName">Coco</span></div>
+  <div class="title" id="title" title="Click to set your dog's name"><span id="nameSpan">Coco</span>'s Class Timer</div>
+
+  <div class="card">
+    <div class="time" id="time">30:00</div>
+    <div class="bar"><div class="fill" id="fill"></div><div class="paw" id="paw">🐾</div></div>
+    <div class="msg" id="msg">Pick a time and press Start</div>
+
+    <div class="presets" id="presets">
+      <button class="pill" data-min="5">5</button>
+      <button class="pill" data-min="10">10</button>
+      <button class="pill" data-min="15">15</button>
+      <button class="pill" data-min="20">20</button>
+      <button class="pill sel" data-min="30">30</button>
+      <button class="pill" data-min="45">45</button>
+      <button class="pill" data-min="60">60</button>
+      <div class="custom"><input id="customMin" type="number" min="1" max="180" placeholder="min"><button class="pill" id="setCustom">Set</button></div>
     </div>
 
-    <div class="timerside">
-      <div class="ringbox">
-        <svg viewBox="0 0 320 320">
-          <circle class="track" cx="160" cy="160" r="140"></circle>
-          <circle class="prog" id="prog" cx="160" cy="160" r="140"></circle>
-        </svg>
-        <div class="pawmark" id="pawmark">🐾</div>
-        <div class="readout">
-          <div class="time" id="time">30:00</div>
-          <div class="msg" id="msg"></div>
-        </div>
-      </div>
+    <div class="row">
+      <button class="big start" id="startBtn">Start</button>
+      <button class="big pause" id="pauseBtn" style="display:none">Pause</button>
+      <button class="big reset" id="resetBtn">Reset</button>
+      <button class="mini" id="plus1">+1 min</button>
+    </div>
 
-      <div class="presets" id="presets">
-        <button class="pill" data-min="5">5</button>
-        <button class="pill" data-min="10">10</button>
-        <button class="pill" data-min="15">15</button>
-        <button class="pill" data-min="20">20</button>
-        <button class="pill sel" data-min="30">30</button>
-        <button class="pill" data-min="45">45</button>
-        <button class="pill" data-min="60">60</button>
-        <div class="custom">
-          <input id="customMin" type="number" min="1" max="180" placeholder="min">
-          <button class="pill" id="setCustom">Set</button>
-        </div>
-      </div>
-
-      <div class="row">
-        <button class="big start" id="startBtn">Start</button>
-        <button class="big pause" id="pauseBtn" style="display:none">Pause</button>
-        <button class="big reset" id="resetBtn">Reset</button>
-        <button class="mini" id="plus1">+1 min</button>
-      </div>
+    <div class="tools">
+      <button class="mini" id="musicBtn">Calm music: off</button>
+      <button class="mini" id="ownMusicBtn">Load my music</button>
+      <button class="mini" id="dogBtn">Change dog photo</button>
+      <button class="mini" id="fsBtn">Fullscreen</button>
     </div>
   </div>
-
-  <div class="tools">
-    <button class="mini" id="musicBtn">Calm music: off</button>
-    <button class="mini" id="ownMusicBtn">Load my music</button>
-    <button class="mini" id="dogBtn">Change dog photo</button>
-    <button class="mini" id="fsBtn">Fullscreen</button>
-  </div>
-  <p class="credit">Press Fullscreen for the projector. The music and dog photo stay off until you turn them on.</p>
 
   <input type="file" id="dogFile" accept="image/*">
   <input type="file" id="musicFile" accept="audio/*">
@@ -130,126 +96,89 @@
 
 <script>
 (function(){
-  const R=140, CIRC=2*Math.PI*R;
-  const prog=document.getElementById('prog'); prog.style.strokeDasharray=CIRC; prog.style.strokeDashoffset=0;
-  const timeEl=document.getElementById('time'), msgEl=document.getElementById('msg'), sub=document.getElementById('subtitle');
+  const hero=document.getElementById('hero');
+  const timeEl=document.getElementById('time'), msgEl=document.getElementById('msg');
+  const fill=document.getElementById('fill'), paw=document.getElementById('paw');
   const startBtn=document.getElementById('startBtn'), pauseBtn=document.getElementById('pauseBtn'), resetBtn=document.getElementById('resetBtn');
-  const presets=document.getElementById('presets'), pawmark=document.getElementById('pawmark');
+  const presets=document.getElementById('presets');
 
-  // ---- dog name ----
+  // dog image (default baked in, user can change)
+  const savedDog=localStorage.getItem('ct_dog');
+  hero.style.backgroundImage="url('"+(savedDog||'dog_hero.jpg')+"')";
+
+  // name
   let dogName=localStorage.getItem('ct_name')||'Coco';
-  function applyName(){ document.getElementById('nameSpan').textContent=dogName;
-    document.getElementById('badgeName').textContent=dogName; document.title=dogName+" Class Timer"; }
+  function applyName(){ document.getElementById('nameSpan').textContent=dogName; document.title=dogName+" Class Timer"; }
   applyName();
-  document.getElementById('title').addEventListener('click',()=>{
-    const n=prompt("What is your dog's name?",dogName);
-    if(n&&n.trim()){ dogName=n.trim(); localStorage.setItem('ct_name',dogName); applyName(); refreshMsg(); }
-  });
+  document.getElementById('title').addEventListener('click',()=>{ const n=prompt("What is your dog's name?",dogName);
+    if(n&&n.trim()){ dogName=n.trim(); localStorage.setItem('ct_name',dogName); applyName(); } });
 
-  // ---- timer ----
-  let totalSec=30*60, leftSec=30*60, running=false, tick=null, endAt=0;
+  // timer
+  let totalSec=1800,leftSec=1800,running=false,tick=null,endAt=0;
   const cheers=()=>[dogName+" is proud of you! 🐾","Keep going! 🐾","Woof! Nice focus!",dogName+" says great job!","Almost there! 🐾","You've got this!"];
-  function fmt(s){const m=Math.floor(s/60),ss=s%60;return m+':'+String(ss).padStart(2,'0');}
-  function color(f){ return f>0.5?getComputedStyle(document.documentElement).getPropertyValue('--good'):f>0.2?getComputedStyle(document.documentElement).getPropertyValue('--warn'):getComputedStyle(document.documentElement).getPropertyValue('--late'); }
-  function placePaw(f){
-    const ang=(-90+360*f)*Math.PI/180;
-    const x=(160+R*Math.cos(ang))/320*100, y=(160+R*Math.sin(ang))/320*100;
-    pawmark.style.left=x+'%'; pawmark.style.top=y+'%';
-  }
-  function render(){
-    timeEl.textContent=fmt(leftSec);
-    const f=totalSec?leftSec/totalSec:0;
-    prog.style.strokeDashoffset=CIRC*(1-f);
-    prog.style.stroke=color(f); placePaw(f);
-  }
-  function refreshMsg(){ if(!running&&leftSec===totalSec) msgEl.textContent=''; }
-  function setDuration(min){ totalSec=leftSec=Math.max(1,Math.round(min*60));
-    running=false; clearInterval(tick); pauseBtn.style.display='none'; startBtn.style.display=''; startBtn.textContent='Start';
-    sub.textContent='Ready! Press Start'; msgEl.textContent=''; render(); }
-  function loop(){ leftSec=Math.max(0,Math.round((endAt-Date.now())/1000)); render();
-    if(leftSec<=0) return done();
+  const fmt=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+  const gv=n=>getComputedStyle(document.documentElement).getPropertyValue(n);
+  function render(){ timeEl.textContent=fmt(leftSec); const f=totalSec?leftSec/totalSec:0;
+    fill.style.width=(f*100)+'%'; fill.style.background=f>0.5?gv('--good'):f>0.2?gv('--warn'):gv('--late');
+    paw.style.left=(f*100)+'%'; }
+  function setDuration(min){ totalSec=leftSec=Math.max(1,Math.round(min*60)); running=false; clearInterval(tick);
+    startBtn.style.display='';pauseBtn.style.display='none';startBtn.textContent='Start'; msgEl.textContent='Ready! Press Start'; render(); }
+  function loop(){ leftSec=Math.max(0,Math.round((endAt-Date.now())/1000)); render(); if(leftSec<=0) return done();
     if(leftSec%30===0){ const c=cheers(); msgEl.textContent=c[Math.floor(Math.random()*c.length)]; } }
-  function start(){ if(running||leftSec<=0) return; running=true; endAt=Date.now()+leftSec*1000;
-    tick=setInterval(loop,250); startBtn.style.display='none'; pauseBtn.style.display='';
-    sub.textContent='Timer is going!'; }
-  function pause(){ running=false; clearInterval(tick); startBtn.style.display=''; pauseBtn.style.display='none';
-    startBtn.textContent='Resume'; sub.textContent='Paused'; }
-  function reset(){ running=false; clearInterval(tick); leftSec=totalSec; startBtn.style.display=''; pauseBtn.style.display='none';
-    startBtn.textContent='Start'; sub.textContent='Ready! Press Start'; msgEl.textContent=''; render(); }
-  function done(){ running=false; clearInterval(tick); leftSec=0; render();
-    startBtn.style.display=''; pauseBtn.style.display='none'; startBtn.textContent='Start';
-    sub.textContent='Time is up!'; msgEl.textContent='⭐ '+dogName+' says: time is up! Great job! ⭐';
-    chime(); celebrate(); }
+  function start(){ if(running||leftSec<=0)return; running=true; endAt=Date.now()+leftSec*1000; tick=setInterval(loop,250);
+    startBtn.style.display='none';pauseBtn.style.display='';msgEl.textContent='Timer is going!'; }
+  function pause(){ running=false;clearInterval(tick);startBtn.style.display='';pauseBtn.style.display='none';startBtn.textContent='Resume';msgEl.textContent='Paused'; }
+  function reset(){ running=false;clearInterval(tick);leftSec=totalSec;startBtn.style.display='';pauseBtn.style.display='none';startBtn.textContent='Start';msgEl.textContent='Ready! Press Start';render(); }
+  function done(){ running=false;clearInterval(tick);leftSec=0;render();startBtn.style.display='';pauseBtn.style.display='none';startBtn.textContent='Start';
+    msgEl.textContent='⭐ '+dogName+' says: time is up! Great job! ⭐'; chime(); celebrate(); }
 
-  presets.addEventListener('click',e=>{ const b=e.target.closest('.pill[data-min]'); if(!b) return;
-    [...presets.querySelectorAll('.pill')].forEach(p=>p.classList.remove('sel')); b.classList.add('sel');
-    setDuration(+b.dataset.min); localStorage.setItem('ct_min',b.dataset.min); });
+  presets.addEventListener('click',e=>{ const b=e.target.closest('.pill[data-min]'); if(!b)return;
+    [...presets.querySelectorAll('.pill')].forEach(p=>p.classList.remove('sel')); b.classList.add('sel'); setDuration(+b.dataset.min); localStorage.setItem('ct_min',b.dataset.min); });
   document.getElementById('setCustom').addEventListener('click',()=>{ const v=+document.getElementById('customMin').value;
     if(v>0){ [...presets.querySelectorAll('.pill')].forEach(p=>p.classList.remove('sel')); setDuration(v); localStorage.setItem('ct_min',v); } });
-  document.getElementById('plus1').addEventListener('click',()=>{ leftSec+=60; totalSec=Math.max(totalSec,leftSec); if(running) endAt+=60000; render(); });
-  startBtn.addEventListener('click',start); pauseBtn.addEventListener('click',pause); resetBtn.addEventListener('click',reset);
-  window.addEventListener('keydown',e=>{ if(e.code==='Space'){ e.preventDefault(); running?pause():start(); } });
+  document.getElementById('plus1').addEventListener('click',()=>{ leftSec+=60; totalSec=Math.max(totalSec,leftSec); if(running)endAt+=60000; render(); });
+  startBtn.onclick=start; pauseBtn.onclick=pause; resetBtn.onclick=reset;
+  window.addEventListener('keydown',e=>{ if(e.code==='Space'){e.preventDefault(); running?pause():start();} });
 
-  // ---- finish chime ----
-  let sharedAC=null;
-  function ac(){ const AC=window.AudioContext||window.webkitAudioContext; if(!sharedAC) sharedAC=new AC();
-    if(sharedAC.state==='suspended') sharedAC.resume(); return sharedAC; }
+  // audio
+  let AC=null; function ac(){ const C=window.AudioContext||window.webkitAudioContext; if(!AC)AC=new C(); if(AC.state==='suspended')AC.resume(); return AC; }
   function chime(){ try{ const a=ac(); [523.25,659.25,783.99,1046.5].forEach((f,i)=>{ const o=a.createOscillator(),g=a.createGain();
-    o.type='sine'; o.frequency.value=f; const t=a.currentTime+i*0.18; g.gain.setValueAtTime(0,t);
-    g.gain.linearRampToValueAtTime(0.22,t+0.04); g.gain.exponentialRampToValueAtTime(0.0001,t+0.9);
-    o.connect(g).connect(a.destination); o.start(t); o.stop(t+0.95); }); }catch(e){} }
+    o.type='sine';o.frequency.value=f; const t=a.currentTime+i*0.18; g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.22,t+0.04);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+0.9); o.connect(g).connect(a.destination); o.start(t); o.stop(t+0.95); }); }catch(e){} }
   function celebrate(){ const em=['🐾','⭐','🦴','✨','🎉','🐶']; for(let i=0;i<30;i++){ const d=document.createElement('div');
-    d.textContent=em[i%em.length]; d.style.cssText='position:fixed;left:'+Math.random()*100+'vw;top:-40px;font-size:'+(20+Math.random()*26)+'px;z-index:60;pointer-events:none;transition:transform 2.8s ease-in,opacity 2.8s';
-    document.body.appendChild(d); requestAnimationFrame(()=>{ d.style.transform='translateY(112vh) rotate('+(Math.random()*720-360)+'deg)'; d.style.opacity='0'; });
-    setTimeout(()=>d.remove(),2900); } }
+    d.textContent=em[i%em.length]; d.style.cssText='position:fixed;left:'+Math.random()*100+'vw;top:-40px;font-size:'+(22+Math.random()*26)+'px;z-index:60;pointer-events:none;transition:transform 2.8s ease-in,opacity 2.8s';
+    document.body.appendChild(d); requestAnimationFrame(()=>{ d.style.transform='translateY(112vh) rotate('+(Math.random()*720-360)+'deg)';d.style.opacity='0'; }); setTimeout(()=>d.remove(),2900); } }
 
-  // ---- generative calm music (no files, no copyright) ----
-  const Calm={ on:false, voices:[], timer:null,
-    start(){ const a=ac(); this.master=a.createGain(); this.master.gain.value=0; this.master.connect(a.destination);
-      this.master.gain.linearRampToValueAtTime(0.55,a.currentTime+2);
+  const Calm={on:false,voices:[],timer:null,
+    start(){ const a=ac(); this.master=a.createGain(); this.master.gain.value=0; this.master.connect(a.destination); this.master.gain.linearRampToValueAtTime(0.55,a.currentTime+2);
       this.lp=a.createBiquadFilter(); this.lp.type='lowpass'; this.lp.frequency.value=1700; this.lp.connect(this.master);
-      this.delay=a.createDelay(); this.delay.delayTime.value=0.34; this.fb=a.createGain(); this.fb.gain.value=0.28;
-      this.delay.connect(this.fb); this.fb.connect(this.delay); this.delay.connect(this.lp);
-      // warm pad chord
+      this.delay=a.createDelay(); this.delay.delayTime.value=0.34; this.fb=a.createGain(); this.fb.gain.value=0.28; this.delay.connect(this.fb); this.fb.connect(this.delay); this.delay.connect(this.lp);
       this.padGain=a.createGain(); this.padGain.gain.value=0.10; this.padGain.connect(this.lp);
-      [130.81,196.0,261.63].forEach(f=>{ const o=a.createOscillator(); o.type='sine'; o.frequency.value=f;
-        const g=a.createGain(); g.gain.value=0.33; o.connect(g).connect(this.padGain); o.start(); this.voices.push(o); });
+      [130.81,196.0,261.63].forEach(f=>{ const o=a.createOscillator(); o.type='sine'; o.frequency.value=f; const g=a.createGain(); g.gain.value=0.33; o.connect(g).connect(this.padGain); o.start(); this.voices.push(o); });
       this.on=true; this.schedule(); },
-    note(){ const a=ac(); const scale=[261.63,293.66,329.63,392.0,440.0,523.25,587.33,659.25];
-      const f=scale[Math.floor(Math.random()*scale.length)]; const o=a.createOscillator(); o.type='triangle'; o.frequency.value=f;
-      const g=a.createGain(); const t=a.currentTime; g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.16,t+0.05);
-      g.gain.exponentialRampToValueAtTime(0.0001,t+1.7); o.connect(g); g.connect(this.lp); g.connect(this.delay); o.start(t); o.stop(t+1.8); },
-    schedule(){ if(!this.on) return; this.note(); this.timer=setTimeout(()=>this.schedule(), 1300+Math.random()*1700); },
-    stop(){ this.on=false; clearTimeout(this.timer); const a=ac();
-      try{ this.master.gain.linearRampToValueAtTime(0,a.currentTime+1); }catch(e){}
-      setTimeout(()=>{ this.voices.forEach(o=>{try{o.stop()}catch(e){}}); this.voices=[]; },1200); }
-  };
+    note(){ const a=ac(); const sc=[261.63,293.66,329.63,392.0,440.0,523.25,587.33,659.25]; const f=sc[Math.floor(Math.random()*sc.length)];
+      const o=a.createOscillator(); o.type='triangle'; o.frequency.value=f; const g=a.createGain(); const t=a.currentTime;
+      g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.16,t+0.05); g.gain.exponentialRampToValueAtTime(0.0001,t+1.7);
+      o.connect(g); g.connect(this.lp); g.connect(this.delay); o.start(t); o.stop(t+1.8); },
+    schedule(){ if(!this.on)return; this.note(); this.timer=setTimeout(()=>this.schedule(),1300+Math.random()*1700); },
+    stop(){ this.on=false; clearTimeout(this.timer); const a=ac(); try{this.master.gain.linearRampToValueAtTime(0,a.currentTime+1);}catch(e){} setTimeout(()=>{this.voices.forEach(o=>{try{o.stop()}catch(e){}});this.voices=[];},1200); } };
   const localAudio=document.getElementById('localAudio');
-  document.getElementById('musicBtn').addEventListener('click',function(){
-    if(Calm.on){ Calm.stop(); this.textContent='Calm music: off'; }
-    else { if(!localAudio.paused){ localAudio.pause(); document.getElementById('ownMusicBtn').textContent='Load my music'; }
-      Calm.start(); this.textContent='Calm music: on'; } });
+  document.getElementById('musicBtn').addEventListener('click',function(){ if(Calm.on){Calm.stop();this.textContent='Calm music: off';}
+    else{ if(!localAudio.paused){localAudio.pause();document.getElementById('ownMusicBtn').textContent='Load my music';} Calm.start(); this.textContent='Calm music: on'; } });
   document.getElementById('ownMusicBtn').addEventListener('click',()=>document.getElementById('musicFile').click());
-  document.getElementById('musicFile').addEventListener('change',e=>{ const f=e.target.files[0]; if(!f) return;
-    if(Calm.on){ Calm.stop(); document.getElementById('musicBtn').textContent='Calm music: off'; }
+  document.getElementById('musicFile').addEventListener('change',e=>{ const f=e.target.files[0]; if(!f)return; if(Calm.on){Calm.stop();document.getElementById('musicBtn').textContent='Calm music: off';}
     localAudio.src=URL.createObjectURL(f); localAudio.play(); document.getElementById('ownMusicBtn').textContent='My music: playing'; });
 
-  // ---- change dog photo (optional override) ----
-  const dogcard=document.getElementById('dogcard'), dogFile=document.getElementById('dogFile');
-  const savedDog=localStorage.getItem('ct_dog');
-  function showDogImg(url){ const v=document.getElementById('dogVid'); if(v) v.remove();
-    let img=dogcard.querySelector('img'); if(!img){ img=new Image(); dogcard.insertBefore(img,dogcard.firstChild);} img.src=url; }
-  if(savedDog) showDogImg(savedDog);
-  document.getElementById('dogBtn').addEventListener('click',()=>dogFile.click());
-  dogFile.addEventListener('change',e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader();
-    r.onload=()=>{ try{localStorage.setItem('ct_dog',r.result);}catch(_){ } showDogImg(r.result); }; r.readAsDataURL(f); });
+  // change dog photo
+  document.getElementById('dogBtn').addEventListener('click',()=>document.getElementById('dogFile').click());
+  document.getElementById('dogFile').addEventListener('change',e=>{ const f=e.target.files[0]; if(!f)return; const r=new FileReader();
+    r.onload=()=>{ try{localStorage.setItem('ct_dog',r.result);}catch(_){ } hero.style.backgroundImage="url('"+r.result+"')"; }; r.readAsDataURL(f); });
 
-  document.getElementById('fsBtn').addEventListener('click',()=>{ if(!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); });
+  document.getElementById('fsBtn').addEventListener('click',()=>{ if(!document.fullscreenElement)document.documentElement.requestFullscreen(); else document.exitFullscreen(); });
 
-  // init
   const lastMin=+localStorage.getItem('ct_min')||30;
   [...presets.querySelectorAll('.pill[data-min]')].forEach(p=>p.classList.toggle('sel',+p.dataset.min===lastMin));
-  setDuration(lastMin); sub.textContent='Pick a time and press Start';
+  setDuration(lastMin); msgEl.textContent='Pick a time and press Start';
 })();
 </script>
 </body>
